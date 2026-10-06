@@ -96,23 +96,27 @@ async function run() {
             let oldEnv = {};
 
             for (const string of oldEnvOutput) {
-                const [name, value] = string.split("=");
+                const separator = string.indexOf("=");
+                if (separator <= 0) continue;
+
                 // @ts-ignore
-                oldEnv[name] = value;
+                oldEnv[string.slice(0, separator)] = string.slice(separator + 1);
             }
 
             core.startGroup("Environment variables");
             for (const string of newEnvOutput) {
-                if (!string.includes("=")) continue;
+                const separator = string.indexOf("=");
+                if (separator <= 0) continue;
 
-                let [name, newValue] = string.split("=");
+                const name = string.slice(0, separator);
+                let newValue = string.slice(separator + 1);
 
                 // @ts-ignore
                 if (newValue !== oldEnv[name]) {
                     core.info(`Setting ${name}`);
 
                     const pathLikeVariables = ["PATH", "INCLUDE", "LIB", "LIBPATH"];
-                    if (pathLikeVariables.indexOf(name.toUpperCase()) !== 1) {
+                    if (pathLikeVariables.indexOf(name.toUpperCase()) !== -1) {
                         function unique(value: string, index: number, self: string[]) {
                             return self.indexOf(value) === index;
                         }

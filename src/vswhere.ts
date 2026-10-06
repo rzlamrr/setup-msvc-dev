@@ -28,9 +28,14 @@ export function findVS(): string {
     let vswhere = findVSWhere();
 
     try {
-        return child.execSync(`"${vswhere}" -products * -latest -prerelease -property installationPath`)
+        const installationPath = child.execSync(`"${vswhere}" -products * -latest -prerelease -property installationPath`)
             .toString()
-            .trim();
+            .trim()
+            .split(/\r?\n/)[0];
+
+        if (!installationPath) throw new Error("vswhere returned no installation path");
+
+        return installationPath;
     } catch (e) {
         throw new Error("vswhere did not find Visual Studio", { cause: e });
     }
